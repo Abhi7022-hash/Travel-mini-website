@@ -3,7 +3,7 @@ const app = express();
 
 app.get("/", (req, res) => {
   res.send(`
-    <h1>Travel Booking Website</h1>
+    <h1>Travel Booking application</h1>
     <ul>
       <li><a href="/users">Users</a></li>
       <li><a href="/bookings">Bookings</a></li>
