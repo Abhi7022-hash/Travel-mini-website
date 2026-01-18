@@ -44,7 +44,7 @@ pipeline {
                """
            }
        }
-       stage ("Check Kubernetes Access")
+       stage ("Check Kubernetes Access") {
            steps {
                sh """
                kubectl get nodes
