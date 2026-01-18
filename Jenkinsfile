@@ -1,6 +1,7 @@
+
 pipeline {
     agent any
- 
+
     environment {
         DOCKER_USER  = "abhishek661"
         DOCKER_CREDS = "dockerhub-cred"
@@ -17,11 +18,11 @@ pipeline {
 
         stage("Build Docker Images") {
             steps {
-                sh """
+                sh '''
                 docker build -t $DOCKER_USER/frontend-service:latest frontend-service
                 docker build -t $DOCKER_USER/user-service:latest user-service
                 docker build -t $DOCKER_USER/booking-service:latest booking-service
-                """
+                '''
             }
         }
 
@@ -32,48 +33,57 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME',
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
-                    sh """
+                    sh '''
                     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                    """
+                    '''
                 }
             }
         }
 
         stage("Push Images to DockerHub") {
             steps {
-                sh """
+                sh '''
                 docker push $DOCKER_USER/frontend-service:latest
                 docker push $DOCKER_USER/user-service:latest
                 docker push $DOCKER_USER/booking-service:latest
-                """
+                '''
             }
         }
 
         stage("Check Kubernetes Access") {
             steps {
-                sh """
-                kubectl get nodes
-                """
+                withCredentials([file(credentialsId: 'kubeconfig-cred', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl get nodes
+                    '''
+                }
             }
         }
 
         stage("Deploy to Kubernetes") {
             steps {
-                sh """
-                kubectl apply -f frontend-service/k8s/
-                kubectl apply -f user-service/k8s/
-                kubectl apply -f booking-service/k8s/
-                """
+                withCredentials([file(credentialsId: 'kubeconfig-cred', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl apply -f frontend-service/k8s/
+                    kubectl apply -f user-service/k8s/
+                    kubectl apply -f booking-service/k8s/
+                    '''
+                }
             }
         }
 
         stage("Restart Deployments") {
             steps {
-                sh """
-                kubectl rollout restart deployment f-deploy
-                kubectl rollout restart deployment user-deployment
-                kubectl rollout restart deployment booking-deployment
-                """
+                withCredentials([file(credentialsId: 'kubeconfig-cred', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl rollout restart deployment f-deploy
+                    kubectl rollout restart deployment user-deployment
+                    kubectl rollout restart deployment booking-deployment
+                    '''
+                }
             }
         }
     }
@@ -87,12 +97,6 @@ pipeline {
         }
     }
 }
-
-
-
-
-
-
 
 
 
