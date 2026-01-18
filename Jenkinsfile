@@ -80,8 +80,8 @@ pipeline {
                     sh '''
                     export KUBECONFIG=$KUBECONFIG
                     kubectl rollout restart deployment f-deploy
-                    kubectl rollout restart deployment user-deployment
-                    kubectl rollout restart deployment booking-deployment
+                    kubectl rollout restart deployment user-deploy
+                    kubectl rollout restart deployment booking-deploy
                     '''
                 }
             }
